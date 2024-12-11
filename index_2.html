@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <meta charset="utf-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <title>HALLOWEEN</title>
+   <style type="text/css">
+   	html{cursor:none;}
+      body {
+          margin: -20px;
+          overflow: hidden;
+          position: relative;
+          background-image: url(background.jpg);
+          background-size: cover;
+      }
+
+      #cursor {
+          position: absolute;
+          pointer-events: none;
+          transform: translate(-50%, -50%);
+          width: 200px;
+          height: 200px;
+          z-index: 9999;
+      }
+
+      #timer {
+          position: fixed;
+          top: 10px;
+          left: 10px;
+          font-family: 'Paperlogy-8ExtraBold';
+          font-size: 30px;
+          font-weight: bold;
+          color: rgb(255, 132, 0);
+          z-index: 1000;
+      }
+
+      .floating-image {
+          position: absolute;
+          width: 200px;
+          height: 200px;
+      }
+
+      /* 화면 전체 비디오 스타일 */
+      #videoPlayer {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100vw;
+          height: 100vh;
+          display: none;
+          object-fit: cover;
+      }
+
+      .candy {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            cursor: pointer;
+        }
+
+         #counter {
+            position: fixed;
+            top: 50px;
+            left: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            font-family: 'Paperlogy-8ExtraBold';
+        }
+
+        @font-face {
+    font-family: 'Paperlogy-8ExtraBold';
+    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-8ExtraBold.woff2') format('woff2');
+    font-weight: 800;
+    font-style: normal;
+    }
+
+
+   </style>
+</head>
+
+<body>
+   <div id="cursor">
+        <img src="main.gif" alt="cursor" />
+    </div>
+
+    <div id="timer">30</div>
+
+    <video id="videoPlayer" autoplay>
+        <source src="video_ready/ling.mp4" type="video/mp4">
+
+    </video>
+
+    <div id="counter">🍬: 0</div>
+
+   <script type="text/javascript">
+    // 커서 이동 기능
+    window.onmousemove = function(e) {
+        const cursor = document.getElementById('cursor');
+        cursor.style.left = e.clientX + "px";
+        cursor.style.top = e.clientY + "px";
+    };
+
+    // 타이머 기능
+    let timeLeft = 30;
+    const timerElement = document.getElementById('timer');
+
+    function updateTimer() {
+        timerElement.textContent = timeLeft;
+        if (timeLeft > 0) {
+            timeLeft--;
+        } else {
+            clearInterval(timerInterval);
+        }
+    }
+
+    const timerInterval = setInterval(updateTimer, 1000);
+
+    // 이미지들을 담을 배열
+    const images = ['twins.png', 'scream.png', 'ling.png', 'girl.png', 'johnny.png', 'insidius.png', 'nun.png', 'samgak.png', 'saw.png'];
+
+    // 각 이미지에 대해 랜덤 이동 및 반사 효과 적용
+    const floatingImages = images.map(imageUrl => {
+        const imgElement = document.createElement('div');
+        imgElement.classList.add('floating-image');
+        imgElement.style.backgroundImage = `url(${imageUrl})`;
+        document.body.appendChild(imgElement);
+
+        // 랜덤 초기 위치 및 속도
+        let posX = Math.random() * (window.innerWidth - 200);
+        let posY = Math.random() * (window.innerHeight - 200);
+        let velocityX = 2 + Math.random() * 1;
+        let velocityY = 1 + Math.random() * 1;
+
+        return { element: imgElement, posX, posY, velocityX, velocityY, imageUrl };
+    });
+
+	// 이미지 위치 갱신 및 충돌 처리
+	function moveImages() {
+    floatingImages.forEach((image, index) => {
+        image.posX += image.velocityX;
+        image.posY += image.velocityY;
+
+        // 화면을 벗어나지 않도록 처리
+        if (image.posX <= 0 || image.posX >= window.innerWidth - 200) {
+            image.velocityX = -image.velocityX;
+        }
+        if (image.posY <= 0 || image.posY >= window.innerHeight - 200) {
+            image.velocityY = -image.velocityY;
+        }
+
+        // 위치 갱신
+        image.element.style.left = image.posX + 'px';
+        image.element.style.top = image.posY + 'px';
+
+        // 커서와 이미지 간 충돌 감지
+        const cursorX = parseInt(document.getElementById('cursor').style.left);
+        const cursorY = parseInt(document.getElementById('cursor').style.top);
+
+        // 마우스 커서와 이미지가 겹치는지 확인
+        if (
+            cursorX >= image.posX && cursorX <= image.posX + 100 &&
+            cursorY >= image.posY && cursorY <= image.posY + 200
+        ) {
+                // 'ling.png'와 충돌 시 ling.mp4 비디오 표시
+                if (image.imageUrl === 'ling.png') {
+   					 const videoPlayer = document.getElementById('videoPlayer');
+
+			    // 비디오가 이미 재생 중이면 재시작하지 않도록 방지
+    				if (videoPlayer.paused) {
+        		videoPlayer.src = 'video_ready/ling.mp4';
+       	 		videoPlayer.style.display = 'block'; // 비디오 보이도록 설정
+        		videoPlayer.play(); // 비디오 재생 시작
+    			}
+
+    			// 비디오 종료 후 자동으로 숨기기
+    			videoPlayer.addEventListener('ended', function() {
+        		videoPlayer.style.display = 'none'; // 비디오 종료 후 숨기기
+    			});
+			}
+
+                if (image.imageUrl === 'girl.png') {
+                    const videoPlayer = document.getElementById('videoPlayer');
+                    
+                if (videoPlayer.paused) {
+        		videoPlayer.src = 'video_ready/girlhighschool.mp4';
+       	 		videoPlayer.style.display = 'block';
+        		videoPlayer.play();
+    			}
+
+    			videoPlayer.addEventListener('ended', function() {
+        		videoPlayer.style.display = 'none';
+    			});
+			}
+
+                if (image.imageUrl === 'johnny.png') {
+                    const videoPlayer = document.getElementById('videoPlayer');
+                
+                if (videoPlayer.paused) {
+        		videoPlayer.src = 'video_ready/shining.mp4';
+       	 		videoPlayer.style.display = 'block';
+        		videoPlayer.play();
+    			}
+
+    			videoPlayer.addEventListener('ended', function() {
+        		videoPlayer.style.display = 'none';
+    			});
+			}
+
+
+                if (image.imageUrl === 'saw.png') {
+                    const videoPlayer = document.getElementById('videoPlayer');
+                
+                if (videoPlayer.paused) {
+        		videoPlayer.src = 'video_ready/saw.mp4';
+       	 		videoPlayer.style.display = 'block';
+        		videoPlayer.play();
+    			}
+
+    			videoPlayer.addEventListener('ended', function() {
+        		videoPlayer.style.display = 'none';
+    			});
+			}
+
+
+                if (image.imageUrl === 'insidius.png') {
+                    const videoPlayer = document.getElementById('videoPlayer');
+                    
+                if (videoPlayer.paused) {
+        		videoPlayer.src = 'video_ready/insidius_compressed.mp4';
+       	 		videoPlayer.style.display = 'block';
+        		videoPlayer.play();
+    			}
+
+    			videoPlayer.addEventListener('ended', function() {
+        		videoPlayer.style.display = 'none';
+    			});
+			}
+
+            
+            	if (image.imageUrl === 'samgak.png') {
+                    const videoPlayer = document.getElementById('videoPlayer');
+               
+               if (videoPlayer.paused) {
+        		videoPlayer.src = 'video_ready/pyramidhead_compressed.mp4';
+       	 		videoPlayer.style.display = 'block';
+        		videoPlayer.play();
+    			}
+
+    			videoPlayer.addEventListener('ended', function() {
+        		videoPlayer.style.display = 'none';
+    			});
+			}
+
+
+                if (image.imageUrl === 'nun.png') {
+                    const videoPlayer = document.getElementById('videoPlayer');
+                
+                if (videoPlayer.paused) {
+        		videoPlayer.src = 'video_ready/nun.mp4';
+       	 		videoPlayer.style.display = 'block';
+        		videoPlayer.play();
+    			}
+
+    			videoPlayer.addEventListener('ended', function() {
+        		videoPlayer.style.display = 'none';
+    			});
+			}
+
+                if (image.imageUrl === 'scream.png') {
+                    const videoPlayer = document.getElementById('videoPlayer');
+                    
+                if (videoPlayer.paused) {
+        		videoPlayer.src = 'video_ready/scream.mp4';
+       	 		videoPlayer.style.display = 'block';
+        		videoPlayer.play();
+    			}
+
+    			videoPlayer.addEventListener('ended', function() {
+        		videoPlayer.style.display = 'none';
+    			});
+			}
+
+                if (image.imageUrl === 'twins.png') {
+                    const videoPlayer = document.getElementById('videoPlayer');
+                
+                if (videoPlayer.paused) {
+        		videoPlayer.src = 'video_ready/twins_compressed.mp4';
+       	 		videoPlayer.style.display = 'block';
+        		videoPlayer.play();
+    			}
+
+    			videoPlayer.addEventListener('ended', function() {
+        		videoPlayer.style.display = 'none';
+    			});
+			}
+            
+            }
+        });
+    }
+
+ const screenWidth = window.innerWidth;
+        const screenHeight = window.innerHeight;
+
+        // 이미지 목록 (여러 개의 이미지 파일)
+        const candyImages = ['candy1.png', 'candy2.png', 'candy3.png', 'candy4.png'];
+
+        let clickedCount = 0;
+
+        // 클릭 횟수를 표시하는 함수
+        function updateCounter() {
+            const counterElement = document.getElementById('counter');
+            counterElement.textContent = `🍬 : ${clickedCount}`;
+        }
+
+        // 무작위로 이미지 배치하는 함수
+        function createRandomCandy() {
+            const candy = document.createElement('div');
+            candy.classList.add('candy');
+
+            // 무작위 이미지 선택
+            const randomImage = candyImages[Math.floor(Math.random() * candyImages.length)];
+            candy.style.backgroundImage = `url('${randomImage}')`;
+            candy.style.backgroundSize = 'cover';
+
+            // 무작위 위치 설정
+            const posX = Math.random() * (screenWidth - 100); // 화면 너비에서 이미지 크기를 빼서 위치 조정
+            const posY = Math.random() * (screenHeight - 100); // 화면 높이에서 이미지 크기를 빼서 위치 조정
+
+            candy.style.left = `${posX}px`;
+            candy.style.top = `${posY}px`;
+
+            // 클릭 이벤트 추가
+            candy.addEventListener('click', function() {
+                candy.remove();
+                clickedCount++;
+                updateCounter();
+            });
+
+            // 이미지 추가
+            document.body.appendChild(candy);
+        }
+
+        // 이미지를 여러 개 추가 (예: 20개)
+        for (let i = 0; i < 30; i++) {
+            createRandomCandy();
+        }
+    // 16ms 마다 이미지 위치 갱신
+    setInterval(moveImages, 16);
+</script>
+
+</body>
+</html>
